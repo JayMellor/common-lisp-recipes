@@ -60,7 +60,7 @@
   (initialize 'div-body)
   (open-browser))
 
-; nicer hash syntax
+;; nicer hash syntax
 (defmacro hash (&body k-v-pairs)
   (let* ((new-hash (make-hash-table)))
     (loop for (key value) in k-v-pairs
@@ -80,3 +80,16 @@
 	      (progn
 		(setf (gethash args prev-calls) new-val)
 		new-val)))))))
+
+(defun ^ (a b)
+  (when (> b 0)
+    (reduce '* (loop for i from 0 below b collect a))))
+
+(defun ^ (a exp)
+  "Exponent function using recursion"
+  (if (< exp 0)
+      (/ 1 (^ a (* -1 exp)))
+      (if (= exp 0)
+	  1
+	  (* a
+	     (^ a (1- exp))))))
