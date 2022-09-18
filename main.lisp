@@ -1,3 +1,4 @@
+;; Miscellaneous functions and recipes
 (in-package :first-project)
 
 (defun friend ()
@@ -24,7 +25,6 @@
 	  (setq let-bindings `(let ,(list binding) ,let-bindings)))
 	let-bindings))))
 
-
 (defun flip (func)
   (lambda (fst scd)
     (funcall func scd fst)))
@@ -42,23 +42,6 @@
 (loop for (src trg wgt)
 	in '((1 2 3) (2 1 3) (2 3 1))
       collect (list src trg)) ; => ((1 2) (2 1) (2 3))
-
-; clog functions
-
-(defun div-body (body)
-  (set-on-click (create-div body :content "hello world"
-				 :class "fred")
-		(lambda (obj)
-		  (setf (color obj) (progn
-				      (terpri)
-				      (princ "Setting colour to: ")
-				      (print (rgb (random 255)
-						  (random 255)
-						  (random 255))))))))
-
-(defun hello-world ()
-  (initialize 'div-body)
-  (open-browser))
 
 ;; nicer hash syntax
 (defmacro hash (&body k-v-pairs)
