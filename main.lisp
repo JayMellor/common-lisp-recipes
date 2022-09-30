@@ -76,3 +76,35 @@
 	  1
 	  (* a
 	     (^ a (1- exp))))))
+
+;; FLET allows locally scoped function creation
+(flet ((f (x)
+	 (+ x 2)))
+  (f 2)) ;; => 4
+
+;; (f o g)(x) = f(g(x))
+;; ((o f g) x) === (f (g x))
+(defun compose (func1 func2)
+  (flet ((composed (&rest args)
+	   (funcall func1 (apply func2 args))))
+    (function composed)))
+
+;; LABELS allows sequential function definition
+(labels ((add2 (x)
+	   (+ x 2))
+	 (mult3 (x)
+	   (* x 3))
+	 (add-then-mult (x)
+	   (mult3 (add2 x))))
+  (add-then-mult 2))
+
+(flet ((add2 (x)
+	 (+ x 2))
+       (mult3 (x)
+	 (* x 3)))
+  (funcall (compose #'add2 #'mult3) 3))
+
+;; Example of generic keyword arguments
+(defun kw (&rest args &key &allow-other-keys)
+  args)
+(kw :an-arg "fred") ;; -> (:AN-ARG "fred'")
