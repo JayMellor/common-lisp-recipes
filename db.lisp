@@ -1,4 +1,4 @@
-;; CD Database
+;;;; CD Database
 
 (defvar *db* nil
   "Database property list")

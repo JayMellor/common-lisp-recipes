@@ -1,4 +1,5 @@
-;; Miscellaneous functions and recipes
+;;;; Miscellaneous functions and recipes
+
 (in-package :first-project)
 
 (defun friend ()
@@ -108,3 +109,11 @@
 (defun kw (&rest args &key &allow-other-keys)
   args)
 (kw :an-arg "fred") ;; -> (:AN-ARG "fred'")
+
+(defun plot (fn min max step)
+  (loop for idx from min to max by step do
+    ;; LOOP REPEAT takes a number of times to compute the expression
+    (let ((times (funcall fn idx)))
+      (loop repeat times  do
+	(format t "*")))
+    (format t "~%")))
