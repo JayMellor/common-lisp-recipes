@@ -33,6 +33,19 @@
 		     collect (string->row string size row))))
     (list :grid grid :size size)))
 
+(defun print-grid (grid)
+  (format t "~{~A~%~}" (getf grid :grid)))
+
+(defun grid->string (grid)
+  (let ((grid-string "")
+	(size (getf grid :size)))
+    (loop for row from 0 below size
+	  collect (loop for col from 0 below size
+			do (setf grid-string
+				 (format nil "~A~A"
+					 grid-string (cell row col grid)))))
+    grid-string))
+
 (defun cell (row col grid)
   (let ((grid-list (getf grid :grid)))
     (nth col (nth row grid-list))))
@@ -74,6 +87,7 @@
 	 t)))
 
 (defun pair-col (row col grid)
+  "Attempts to apply the pair rule to GRID using cells (ROW, COL) and (ROW, COL + 1)"
   (cond ((eq +.+ (cell row col grid))
 	 nil)
 	((null (eq +.+ (cell (+ 2 row) col grid)))
@@ -88,6 +102,7 @@
 	 t)))
 
 (defun pair-row (row col grid)
+  "Attempts to apply the pair rule to GRID using cells (ROW, COL) and (ROW + 1, COL)"
   (cond ((eq +.+ (cell row col grid))
 	 nil)
 	((null (eq +.+ (cell row (+ 2 col) grid)))
@@ -152,5 +167,29 @@
 	   (set-in-col +0+ col grid)
 	   t))))
 
-(def solve (grid)
-  ;;todo)
+;;; SOLVING
+
+(defun solve-cell (row col grid)
+  (find t (list (oxo-row row col grid)
+		(oxo-col row col grid)
+		(pair-col row col grid)
+		(pair-row row col grid)
+		(parity-row row grid)
+		(parity-col col grid))))
+
+(defun solve-grid-cells (grid)
+  (let ((size (getf grid :size)))
+    (find t (loop for row from 0 below size
+		  collect (find t (loop for col from 0 below size
+					collect (solve-cell row col grid)))))))
+
+(defun solve (grid)
+  (loop for change-made = (solve-grid-cells grid)
+	until (null change-made)))
+
+(defun solved-p (grid)
+  (let ((size (getf grid :size)))
+    (null (find t (loop for row from 0 below size
+			collect (find t (loop for col from 0 below size
+					      collect (eq +.+
+							  (cell row col grid)))))))))
