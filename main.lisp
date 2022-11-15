@@ -117,3 +117,26 @@
       (loop repeat times  do
 	(format t "*")))
     (format t "~%")))
+
+(defmacro my-cond (&body body)
+  ;; (if 'first 'second)
+  ;; (if 'third 'fourth (if 'first 'second))
+  ;; (if 'fifth 'sixth (if 'third 'fourth (if 'first 'second)))
+  ;; etc..
+  (reduce (lambda (acc curr)
+	    (let* ((condition (car curr))
+		   (consequent (cdr curr))
+		   (statement `(if ,condition (progn ,@consequent))))
+              (if (null acc)
+		  statement
+		  ;; Either statement below works here
+		  ;;(append statement (list acc))
+		  `(,@statement ,acc))))
+	  (reverse body)
+	  :initial-value nil))
+
+(defmacro my-or (&body body)
+  `(cond ,@(mapcar #'(lambda (element)
+		       (list element element))
+		   body)))
+
