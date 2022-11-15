@@ -136,7 +136,15 @@
 	  :initial-value nil))
 
 (defmacro my-or (&body body)
-  `(cond ,@(mapcar #'(lambda (element)
-		       (list element element))
-		   body)))
+  `(my-cond
+     ,@(mapcar #'(lambda (element)
+		   (list element element))
+	       body)))
+
+(defmacro my-and (&body body)
+  `(my-cond
+     ,@(mapcar #'(lambda (element)
+		   (list (null element) element))
+	       body)
+     ,(list t (car (last body)))))
 
