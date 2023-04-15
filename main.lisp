@@ -58,12 +58,12 @@
   (let ((prev-calls (make-hash-table :test #'equal))) 
     (lambda (&rest args)
       (multiple-value-bind (val is-member) (gethash args prev-calls) 
-	(if is-member
-	    val
-	    (let ((new-val (apply fn args)))
-	      (progn
-		(setf (gethash args prev-calls) new-val)
-		new-val)))))))
+		(if is-member
+			val
+			(let ((new-val (apply fn args)))
+			  (progn
+				(setf (gethash args prev-calls) new-val)
+				new-val)))))))
 
 (defun ^ (a b)
   (when (> b 0)
