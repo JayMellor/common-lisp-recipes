@@ -18,13 +18,13 @@
   "Version of LET*. Creates locally scoped variables using BINDINGS"
   (let ((rev-bindings (reverse bindings))) 
     (let ((first-binding (car rev-bindings))
-	  (cdr-bindings (cdr rev-bindings))) 
+		  (cdr-bindings (cdr rev-bindings))) 
       (let ((let-bindings (concatenate 'list
-				       `(let ,(list first-binding)) 
-				       body))) 
-	(loop for binding in cdr-bindings do 
-	  (setq let-bindings `(let ,(list binding) ,let-bindings)))
-	let-bindings))))
+									   `(let ,(list first-binding)) 
+									   body))) 
+		(loop for binding in cdr-bindings do 
+		  (setq let-bindings `(let ,(list binding) ,let-bindings)))
+		let-bindings))))
 
 (defun flip (func)
   (lambda (fst scd)
@@ -74,9 +74,9 @@
   (if (< exp 0)
       (/ 1 (^ a (* -1 exp)))
       (if (= exp 0)
-	  1
-	  (* a
-	     (^ a (1- exp))))))
+		  1
+		  (* a
+			 (^ a (1- exp))))))
 
 ;; FLET allows locally scoped function creation
 (flet ((f (x)
@@ -87,22 +87,22 @@
 ;; ((o f g) x) === (f (g x))
 (defun compose (func1 func2)
   (flet ((composed (&rest args)
-	   (funcall func1 (apply func2 args))))
+		   (funcall func1 (apply func2 args))))
     (function composed)))
 
 ;; LABELS allows sequential function definition
 (labels ((add2 (x)
-	   (+ x 2))
-	 (mult3 (x)
-	   (* x 3))
-	 (add-then-mult (x)
-	   (mult3 (add2 x))))
+		   (+ x 2))
+		 (mult3 (x)
+		   (* x 3))
+		 (add-then-mult (x)
+		   (mult3 (add2 x))))
   (add-then-mult 2))
 
 (flet ((add2 (x)
-	 (+ x 2))
+		 (+ x 2))
        (mult3 (x)
-	 (* x 3)))
+		 (* x 3)))
   (funcall (compose #'add2 #'mult3) 3))
 
 ;; Example of generic keyword arguments
@@ -115,7 +115,7 @@
     ;; LOOP REPEAT takes a number of times to compute the expression
     (let ((times (funcall fn idx)))
       (loop repeat times  do
-	(format t "*")))
+		(format t "*")))
     (format t "~%")))
 
 (defmacro my-cond (&body body)
@@ -123,28 +123,31 @@
   ;; (if 'third 'fourth (if 'first 'second))
   ;; (if 'fifth 'sixth (if 'third 'fourth (if 'first 'second)))
   ;; etc..
+  "COND defined with REDUCE"
   (reduce (lambda (acc curr)
 	    (let* ((condition (car curr))
 		   (consequent (cdr curr))
 		   (statement `(if ,condition (progn ,@consequent))))
               (if (null acc)
-		  statement
-		  ;; Either statement below works here
-		  ;;(append statement (list acc))
-		  `(,@statement ,acc))))
-	  (reverse body)
-	  :initial-value nil))
+				  statement
+				  ;; Either statement below works here
+				  ;;(append statement (list acc))
+				  `(,@statement ,acc))))
+		  (reverse body)
+		  :initial-value nil))
 
 (defmacro my-or (&body body)
+  "OR defined with MY-COND"
   `(my-cond
      ,@(mapcar #'(lambda (element)
-		   (list element element))
-	       body)))
+				   (list element element))
+			   body)))
 
 (defmacro my-and (&body body)
+  "AND defined with MY-COND"
   `(my-cond
      ,@(mapcar #'(lambda (element)
-		   (list (null element) element))
-	       body)
+				   (list (null element) element))
+			   body)
      ,(list t (car (last body)))))
 
