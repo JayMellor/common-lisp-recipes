@@ -66,10 +66,11 @@
 				new-val)))))))
 
 (defun ^ (a b)
+  "Custom implementation of EXPT"
   (when (> b 0)
     (reduce '* (loop for i from 0 below b collect a))))
 
-(defun ^ (a exp)
+(defun rec-^ (a exp)
   "Exponent function using recursion"
   (if (< exp 0)
       (/ 1 (^ a (* -1 exp)))
@@ -151,3 +152,262 @@
 			   body)
      ,(list t (car (last body)))))
 
+
+;;; LOOPS
+
+
+(defparameter my-plist '(:one 2
+						 :three 44))
+
+;; Increments each value in MY-lIST
+(dolist (num my-plist)
+  (when (symbolp num)
+	(incf (getf my-plist num))))
+
+my-plist
+
+(let ((num-list '(1 2 3 4)))
+  (dolist (num num-list)
+	(when (oddp num)
+	  (return num)))) ;; => 1
+
+(dotimes (idx 6)
+  (format t "~a elephant..~%" (1+ idx)))
+
+(do ((x 1 (1+ x))
+	 (y 9 (1- y)))
+	((= 10 x) y)
+  (progn
+	(dotimes (idx x)
+	  (format t "."))
+	(dotimes (idx y)
+	  (format t "+"))
+	(format t "~%")))
+;; Prints .s and +s, but returns 0
+
+;; todo try hash mapping using DO
+
+(loop for x = 1 then (1+ x)
+	  and y = 9 then (1- y)
+	  while (<= x 10)
+	  collecting (list x y))
+;; => ((1 9) (2 8) ...)
+
+
+;;; MACROS
+
+(defun is-prime (num)
+  (cond
+	((<= num 1)
+	 nil)
+	((= 2 num)
+	 t)
+	((zerop (mod num 2))
+	 nil)
+	((null (divisor-upto num 3))
+	 t)))
+
+(defun divisor-upto (num start)
+  "Finds a divisor of NUM between START and (SQRT NUM)"
+  (let ((limit (isqrt num)))
+	(loop for idx from start to limit
+		  when (zerop (mod num idx))
+			return idx)))
+
+;; Can do LOOP ... NEVER
+
+(defun next-prime (num)
+  "Finds the next prime >= NUM"
+  (loop for idx from num
+		when (is-prime idx)
+		  return idx))
+
+;; Solution using DO
+(do ((prime (next-prime 0) (next-prime (1+ prime))))
+	((<= 19 prime) nil)
+  (format t "~d~%" prime))
+
+(defmacro do-primes-leaky ((var start end) &body body)
+  `(do ((,var (next-prime ,start) (next-prime (1+ ,var))))
+	   ((<= ,end ,var))
+	 ,@body))
+
+;; Example usage
+(do-primes-leaky (prime 0 29)
+  (format t "~d" prime))
+
+(do-primes-leaky (prime 0 (random 100))
+  (format t "~d" prime))
+;; => with leaky will eval (RANDOM 100) every iteration
+
+(defmacro do-primes-let ((var start end) &body body)
+  `(do* ((start-val ,start)
+		(end-val ,end)
+		(,var (next-prime start-val) (next-prime (1+ ,var))))
+	   ((<= end-val ,var))
+	 ,@body))
+
+(do-primes (end-val 0 10)
+  (print end-val))
+;; => with let causes error: END-VAL is unbound
+
+(defmacro do-primes ((var start end) &body body)
+  ;; gensym to create interned symbol
+  (let ((start-val-sym (gensym))
+		(end-val-sym (gensym)))
+	`(do* ((,start-val-sym ,start)
+		   (,end-val-sym ,end)
+		   (,var (next-prime ,start-val-sym) (next-prime (1+ ,var))))
+		  ((<= ,end-val-sym ,var))
+	   ,@body)))
+
+;; Example usage of with-gensyms
+(defmacro do-primes-with-gensyms ((var start end) &body body)  
+  (with-gensyms (start-val-sym end-val-sym)
+	`(do* ((,start-val-sym ,start)
+		   (,end-val-sym ,end)
+		   (,var (next-prime ,start-val-sym) (next-prime (1+ ,var))))
+		  ((<= ,end-val-sym ,var))
+	   ,@body)))
+
+(defmacro with-gensyms (var-list &body body)
+  `(let ,(loop for var in var-list
+			   collect `(,var (gensym)))
+	 ,@body))
+
+;;; NUMBERS & CHARACTERS
+
+;; Rational
+1/2
+3/4
+
+;; Complex
+(defvar num #c(2 3))
+(imagpart num) ;; => 3
+(abs num) ;; absolute value from origin
+
+(char= #\q #\q)
+
+
+;;; COLLECTIONS
+
+(vector 1 2 3)
+#(1 2 3)
+
+(make-array 3 :initial-element 29)
+;; => #(29 29 29)
+
+;; Resizable vector
+(defparameter *my-array* (make-array 5 :fill-pointer 0))
+(vector-push 'first *my-array*)
+(vector-push 'second *my-array*)
+(vector-pop *my-array*) 
+*my-array* ; Can have up to 5 elements
+
+(defparameter *adjustable* (make-array 5 :fill-pointer 0 :adjustable t))
+(vector-push-extend 'first *adjustable*)
+*adjustable*
+
+(defparameter *str-are-vec* (make-array 5
+										:fill-pointer 0
+										:adjustable t
+										:element-type 'character))
+(vector-push-extend #\a *str-are-vec*)
+*str-are-vec*
+
+(position 'first '(one two first))
+
+;; COMPLEMENT
+(let ((not-zerop (complement #'zerop)))
+  (funcall not-zerop 4))
+;; => T
+
+(position 'first '(first second first third)
+		  :from-end t)
+;; => 2
+
+
+;; C-c C-i for autocomplete
+;; Can use SETF GETHASH inside MAPHASH to edit the current entry
+;; Can use REMHASH inside MAPHASH to remove entries
+
+(defparameter *descending-list* '(4 3 2 1))
+(sort *descending-list* #'<)
+*descending-list*
+;; => (3 4)
+;; SORT destroys SEQUENCE and returns SEQUENCE in sorted order
+
+(maplist #'(lambda (el) (1+ (car el))) '(1 2 3))
+;; => (2 3 4)
+
+;; MAPCAN is a little like FLATMAP
+(defparameter *mapcan-list* '(2 3 4 5))
+(mapcan #'(lambda (el)
+            (if (zerop (mod el 2))
+				(list el)
+				nil))
+		*mapcan-list*)
+;; => (2 4)
+
+;; 1 2 3 + *
+;; (* 1 (+ 2 3))
+
+(defmacro pl (&rest args)
+  "Polish notation parser"
+  `(let ((num-stack nil)
+		(operators '(+ *)))
+	(loop for el in ',args
+		  do (if (null (find el operators))
+				 (when (numberp el)
+				   (push el num-stack))
+				 (if (< (length num-stack) 2)
+					 (error "invalid form - operator too early")
+					 (let* ((fst (pop num-stack))
+							(scd (pop num-stack))
+							(result (funcall el fst scd)))                       
+					   (push result num-stack)))))
+	 (if (> (length num-stack) 1)
+		 (error "invalid form - expected an operator")
+		 (first num-stack))))
+
+(pl 2 3 3 + *)
+;; => 12
+
+
+;;; CONS USAGES
+
+;; Trees and lists
+
+(defparameter *my-cons* '(1 . ((2 . 5) . 3)))
+(defparameter *list-copy* (copy-list *my-cons*))
+(defparameter *tree-copy* (copy-tree *my-cons*))
+(setf (caadr *my-cons*) 9)
+*list-copy*
+;; => (1 (9 5) . 3)
+*tree-copy*
+;; => (1 (2 5) . 3)
+
+
+;; Sets
+(defparameter *my-set* '(1 2 5 3))
+(adjoin 5 *my-set*)
+;; => (1 2 5 3)
+;; Only adds if not already present
+;; PUSHNEW mofidies the original list
+
+;; associative lists
+
+(defparameter *alist* '((a . 1) (b . 2) (c . 3)))
+(assoc 'b *alist*)
+;; => (B . 2)
+(rassoc 3 *alist*)
+;; => (C . 3)
+(acons 'd 5 *alist*)
+;; puts (D . 5) at the front
+
+(pairlis '(q w e r) '(4 3 2 5))
+;; => ((Q . 4) (W . 3) (E . 2) (R . 5))
+
+;; property lists
+
+'(a 1 b 2 c 3)

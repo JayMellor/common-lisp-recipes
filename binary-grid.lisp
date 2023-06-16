@@ -4,6 +4,8 @@
 (defconstant +1+ #\1)
 (defconstant +.+ #\.)
 
+(defconstant +demo-grid+ "...1.0......1..1")
+
 (defun inverse (value)
   (cond ((eq value +0+)
 	 +1+)
