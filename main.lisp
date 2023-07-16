@@ -353,7 +353,7 @@ my-plist
 ;; (* 1 (+ 2 3))
 
 (defmacro pl (&rest args)
-  "Polish notation parser"
+  "Reverse Polish Notation parser"
   `(let ((num-stack nil)
 		(operators '(+ *)))
 	(loop for el in ',args
@@ -411,3 +411,26 @@ my-plist
 ;; property lists
 
 '(a 1 b 2 c 3)
+
+;;; Auto Lisp example
+
+(defmacro repeat (count &body body)
+  (let ((times-var (gensym)))
+	`(dotimes (,times-var ,count)
+	   ,@body)))
+
+;; GETVAR gets the value of the variable if it's a symbol
+(defun getvar (symbol)
+  (when (symbolp symbol)
+	(eval symbol)))
+
+(defparameter MLST nil)
+
+(defun modes (a)
+  "Takes a list of symbols and sets MLST to pairs of each symbol and its value"
+  (setq MLST nil)
+  (repeat (length a)
+	(setq MLST (append MLST
+					   (list (list (car a)
+								   (getvar (car a))))))
+	(setq a (cdr a))))
