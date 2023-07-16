@@ -434,3 +434,31 @@ my-plist
 					   (list (list (car a)
 								   (getvar (car a))))))
 	(setq a (cdr a))))
+
+;;; FILES
+
+(let ((in (open "./.gitignore"
+				:if-does-not-exist nil)))
+  (when in
+	(loop for line = (read-line in nil)		  
+		  while line do (format t "~a~%" line))
+	(close in)))
+
+(let* ((in (open "./.gitignore"))
+	   (seq (make-array 10))
+	   ;; READ-SEQUENCE reads from the file until the sequence is full
+	   (upto (read-sequence seq in)))
+  (format t "Up to ~a~%~a~%" upto seq))
+
+;; READ reads sexps from a stream
+
+;; OPEN can be used to write to files too
+(let ((out (open "./file"
+				 :direction :output
+				 :if-exists :supersede)))
+  (write-string "this is a file" out)
+  (close out))
+
+;; WITH-OPEN-FILE guarantees closure using UNWIND-PROTECT
+(with-open-file (in "./.gitignore")
+  (format t "~a~%" (read-line in)))
