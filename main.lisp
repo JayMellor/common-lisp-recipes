@@ -127,13 +127,13 @@
   "COND defined with REDUCE"
   (reduce (lambda (acc curr)
 	    (let* ((condition (car curr))
-		   (consequent (cdr curr))
-		   (statement `(if ,condition (progn ,@consequent))))
-              (if (null acc)
-				  statement
-				  ;; Either statement below works here
-				  ;;(append statement (list acc))
-				  `(,@statement ,acc))))
+			   (consequent (cdr curr))
+			   (statement `(if ,condition (progn ,@consequent))))
+          (if (null acc)
+			  statement
+			  ;; Either statement below works here
+			  ;;(append statement (list acc))
+			  `(,@statement ,acc))))
 		  (reverse body)
 		  :initial-value nil))
 
@@ -261,6 +261,11 @@ my-plist
 		  ((<= ,end-val-sym ,var))
 	   ,@body)))
 
+(defmacro with-gensyms (var-list &body body)
+  `(let ,(loop for var in var-list
+			   collect `(,var (gensym)))
+	 ,@body))
+
 ;; Example usage of with-gensyms
 (defmacro do-primes-with-gensyms ((var start end) &body body)  
   (with-gensyms (start-val-sym end-val-sym)
@@ -269,11 +274,6 @@ my-plist
 		   (,var (next-prime ,start-val-sym) (next-prime (1+ ,var))))
 		  ((<= ,end-val-sym ,var))
 	   ,@body)))
-
-(defmacro with-gensyms (var-list &body body)
-  `(let ,(loop for var in var-list
-			   collect `(,var (gensym)))
-	 ,@body))
 
 ;;; NUMBERS & CHARACTERS
 
