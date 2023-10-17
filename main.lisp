@@ -6,6 +6,11 @@
   "Returns a string"
   "You're my friendly fiend")
 
+;; this evaluates to itself
+((lambda (x) (list x (list 'quote x)))
+ '(lambda (x) (list x (list 'quote x))))
+;; => ((LAMBDA (X) (LIST X (LIST 'QUOTE X))) '(LAMBDA (X) (LIST X (LIST 'QUOTE X))))
+
 (defun another (s) (+ 1 s))
 
 (defun factorial (num)
@@ -69,6 +74,12 @@
   "Custom implementation of EXPT"
   (when (> b 0)
     (reduce '* (loop for i from 0 below b collect a))))
+
+;; NOTE
+(plusp 3)
+;; => T
+(plusp -1)
+;; => NIL
 
 (defun rec-^ (a exp)
   "Exponent function using recursion"
