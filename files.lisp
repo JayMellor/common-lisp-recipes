@@ -25,7 +25,7 @@
   (close out))
 
 ;; WITH-OPEN-FILE guarantees closure using UNWIND-PROTECT
-(with-open-file (in "././.gitignore")
+(with-open-file (in "./.gitignore")
   (format t "~a~%" (read-line in)))
 
 ;;; PATHNAMES
