@@ -258,8 +258,8 @@ my-plist
 	   ((<= end-val ,var))
 	 ,@body))
 
-(do-primes (end-val 0 10)
-  (print end-val))
+;; (do-primes (end-val 0 10)
+;;   (print end-val))
 ;; => with let causes error: END-VAL is unbound
 
 (defmacro do-primes ((var start end) &body body)
@@ -445,3 +445,34 @@ my-plist
 					   (list (list (car a)
 								   (getvar (car a))))))
 	(setq a (cdr a))))
+
+
+;; arg-overloaded function
+;; (defunv fun-name ((() nil) ((a) (a))) ((a b) (+ a b)))
+;; (fun-name 1) -> 1
+;; (fun-name) -> nil
+;; Doesn't support & keywords
+(defmacro defunv (name &body bodies)
+  (when (and (listp bodies)
+			 (every #'listp bodies)
+			 (every #'(lambda (body)
+					   (listp (first body)))
+					bodies))
+    `(defun ,name (&rest args)
+	   (case (length args)
+		 ,@(mapcar #'(lambda (body)
+					  (let ((lambda-list (first body))
+							(lambda-body (rest body)))						
+						(cons (length lambda-list)                              
+							  `((apply #'(lambda ,lambda-list ,@lambda-body)
+									   args)))))
+		   bodies)))))
+
+(defunv addl
+  (() 0)
+  ((a) a)
+  ((a b) (+ a b)))
+
+(addl) ;; => 0
+(addl 1) ;; => 1
+(addl 3 4) ;; => 7
