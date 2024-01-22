@@ -2,3 +2,6 @@
 *.*~
 
 *.fasl
+
+# Generated file
+file
