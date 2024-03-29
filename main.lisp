@@ -398,7 +398,6 @@ my-plist
 *tree-copy*
 ;; => (1 (2 5) . 3)
 
-
 ;; Sets
 (defparameter *my-set* '(1 2 5 3))
 (adjoin 5 *my-set*)
@@ -476,3 +475,11 @@ my-plist
 (addl) ;; => 0
 (addl 1) ;; => 1
 (addl 3 4) ;; => 7
+
+(multiple-value-bind (r err) (ignore-errors (error "some error"))
+  (format nil "r: ~A;err: ~A" r err))
+;; "r: NIL;err: some error"
+
+(multiple-value-bind (r err) (ignore-errors (list "some error"))
+  (format nil "r: ~A;err: ~A" r err))
+;; "r: (some error);err: NIL"
