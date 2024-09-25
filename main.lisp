@@ -13,6 +13,8 @@
 
 (defun another (s) (+ 1 s))
 
+(disassemble #'another)
+
 (defun factorial (num)
   (if (<= num 1)
       1
@@ -69,6 +71,8 @@
 			  (progn
 				(setf (gethash args prev-calls) new-val)
 				new-val)))))))
+
+;; can be done using DOTIMES
 
 (defun ^ (a b)
   "Custom implementation of EXPT"
@@ -470,11 +474,13 @@ my-plist
 (defunv addl
   (() 0)
   ((a) a)
-  ((a b) (+ a b)))
+  ((a b) (+ a b))
+  ((a b c) (+ a b c)))
 
 (addl) ;; => 0
 (addl 1) ;; => 1
 (addl 3 4) ;; => 7
+(addl 1 2 3)
 
 (multiple-value-bind (r err) (ignore-errors (error "some error"))
   (format nil "r: ~A;err: ~A" r err))

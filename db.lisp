@@ -96,7 +96,7 @@
 (defun where-with-flet (&key title artist rating (is-ripped nil is-ripped-p))
   (flet ((where-key (key value record)
            (equal (getf record key)
-		  value)))
+				  value)))
     (lambda (record)
       (and (or (null title)
 	       (where-key :title title record))
